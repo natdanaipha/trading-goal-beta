@@ -133,6 +133,32 @@ export default function HeroGeometric({
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
+      <style jsx>{`
+        .custom-checkbox {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border: 2px solid #555;
+          border-radius: 4px;
+          cursor: pointer;
+          position: relative;
+          background-color: transparent;
+        }
+        .custom-checkbox:checked {
+          background-color: #facc15;
+          border-color: #fb923c;
+        }
+        .custom-checkbox:checked::after {
+          content: "✓";
+          color: #030303;
+          position: absolute;
+          left: 3px;
+          top: -1px;
+          font-size: 14px;
+          font-weight: bold;
+        }
+      `}</style>
+
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
 
       <div className="absolute inset-0 overflow-hidden">
@@ -264,12 +290,7 @@ export default function HeroGeometric({
                               type="checkbox"
                               checked={checkedStates[`1-${mult}`] || false}
                               onChange={() => handleCheckboxChange("1", mult)}
-                              className={cn(
-                                "w-4 h-4 rounded border-white/20 focus:ring-2 focus:ring-yellow-400",
-                                checkedStates[`1-${mult}`]
-                                  ? "bg-yellow-400 border-yellow-400"
-                                  : "bg-transparent border-white/20",
-                              )}
+                              className="custom-checkbox"
                             />
                           </td>
                         ))}
@@ -284,12 +305,7 @@ export default function HeroGeometric({
                               type="checkbox"
                               checked={checkedStates[`2-${mult}`] || false}
                               onChange={() => handleCheckboxChange("2", mult)}
-                              className={cn(
-                                "w-4 h-4 rounded border-white/20 focus:ring-2 focus:ring-yellow-400",
-                                checkedStates[`2-${mult}`]
-                                  ? "bg-yellow-400 border-yellow-400"
-                                  : "bg-transparent border-white/20",
-                              )}
+                              className="custom-checkbox"
                             />
                           </td>
                         ))}
