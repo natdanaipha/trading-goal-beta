@@ -1,11 +1,23 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
+import { Nunito } from "next/font/google"
+import { Quicksand } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LayoutClient } from "./layout-client"
 import { Suspense } from "react"
 import "./globals.css"
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+})
+
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Banana Trading",
@@ -61,13 +73,13 @@ export default function RootLayout({
 
         <style>{`
 html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
+  font-family: ${nunito.style.fontFamily};
+  --font-sans: ${nunito.style.fontFamily};
+  --font-mono: ${quicksand.style.fontFamily};
 }
         `}</style>
       </head>
-      <body>
+      <body className={`${nunito.variable} ${quicksand.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
           <LayoutClient>{children}</LayoutClient>
         </Suspense>

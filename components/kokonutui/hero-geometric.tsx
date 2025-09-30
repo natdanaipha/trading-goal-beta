@@ -107,15 +107,15 @@ export default function HeroGeometric({
   }
 
   const calculateWin = (rowId: string, cost: number) => {
-    const multipliers = ["1", "2", "3", "4", "5"]
+    const multipliers = ["1", "2", "3"]
     let total = 0
     multipliers.forEach((mult) => {
       const key = `${rowId}-${mult}`
       if (checkedStates[key]) {
-        total += Number.parseInt(mult)
+        total += 50
       }
     })
-    return cost * total
+    return total
   }
 
   const fadeUpVariants = {
@@ -271,20 +271,20 @@ export default function HeroGeometric({
                     <thead>
                       <tr className="border-b border-white/10">
                         <th className="text-white/80 font-medium p-3 text-left">no</th>
+                        <th className="text-white/80 font-medium p-3 text-left">tier</th>
                         <th className="text-white/80 font-medium p-3 text-left">cost</th>
                         <th className="text-white/80 font-medium p-3 text-center">1x</th>
                         <th className="text-white/80 font-medium p-3 text-center">2x</th>
                         <th className="text-white/80 font-medium p-3 text-center">3x</th>
-                        <th className="text-white/80 font-medium p-3 text-center">4x</th>
-                        <th className="text-white/80 font-medium p-3 text-center">5x</th>
-                        <th className="text-white/80 font-medium p-3 text-left">win</th>
+                        <th className="text-white/80 font-medium p-3 text-left">balance</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="text-white p-3">1</td>
+                        <td className="text-yellow-400 p-3">★★★★★</td>
                         <td className="text-white p-3">50</td>
-                        {["1", "2", "3", "4", "5"].map((mult) => (
+                        {["1", "2", "3"].map((mult) => (
                           <td key={mult} className="p-3 text-center">
                             <input
                               type="checkbox"
@@ -298,8 +298,9 @@ export default function HeroGeometric({
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
                         <td className="text-white p-3">2</td>
+                        <td className="text-yellow-400 p-3">★★★★★</td>
                         <td className="text-white p-3">50</td>
-                        {["1", "2", "3", "4", "5"].map((mult) => (
+                        {["1", "2", "3"].map((mult) => (
                           <td key={mult} className="p-3 text-center">
                             <input
                               type="checkbox"
