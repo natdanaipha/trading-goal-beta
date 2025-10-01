@@ -4,7 +4,9 @@ import { motion } from "framer-motion"
 import { Pacifico } from "next/font/google"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import useEmblaCarousel from "embla-carousel-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const pacifico = Pacifico({
   subsets: ["latin"],
@@ -88,6 +90,8 @@ export default function HeroGeometric({
   title2?: string
 }) {
   const [checkedStates, setCheckedStates] = useState<{ [key: string]: boolean }>({})
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start", slidesToScroll: 1 })
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
     const saved = localStorage.getItem("trading-checkboxes")
@@ -95,6 +99,36 @@ export default function HeroGeometric({
       setCheckedStates(JSON.parse(saved))
     }
   }, [])
+
+  useEffect(() => {
+    if (!emblaApi) return
+
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap())
+    }
+
+    emblaApi.on("select", onSelect)
+    onSelect()
+
+    return () => {
+      emblaApi.off("select", onSelect)
+    }
+  }, [emblaApi])
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev()
+  }, [emblaApi])
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext()
+  }, [emblaApi])
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index)
+    },
+    [emblaApi],
+  )
 
   const handleCheckboxChange = (rowId: string, multiplier: string) => {
     const key = `${rowId}-${multiplier}`
@@ -115,7 +149,7 @@ export default function HeroGeometric({
         total += 50
       }
     })
-    return total
+    return total + 50
   }
 
   const fadeUpVariants = {
@@ -131,6 +165,13 @@ export default function HeroGeometric({
     }),
   }
 
+  const currencyPairs = [
+    { name: "USDJPY", image: "/images/usdjpy.png", size: 40, msg: "Trending pair, mix of volatility & flow" },
+    { name: "EURUSD", image: "/images/eurusd.png", size: 32, msg: "Most traded, tight spreads, stable moves" },
+    { name: "USDCHF", image: "/images/usdchf-new.png", size: 40, msg: "Defensive pair, good for risk-off moves" },
+    { name: "EURJPY", image: "/images/eurjpy.png", size: 40, msg: "smooth trends" },
+  ]
+
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
       <style jsx>{`
@@ -145,11 +186,12 @@ export default function HeroGeometric({
           background-color: transparent;
         }
         .custom-checkbox:checked {
-          background-color: #facc15;
-          border-color: #fb923c;
+          //background-color: #007f00;
+          //border-color: #fb923c;
+          border:none;
         }
         .custom-checkbox:checked::after {
-          content: "✓";
+          content: "⭐";
           color: #030303;
           position: absolute;
           left: 3px;
@@ -233,7 +275,7 @@ export default function HeroGeometric({
               animate="visible"
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
             >
-              <Image src="https://kokonutui.com/logo.svg" alt="Kokonut UI" width={20} height={20} />
+              <Image src="/images/design-mode/logo.svg" alt="Kokonut UI" width={20} height={20} />
               <span className="text-sm text-white/60 tracking-wide">{badge}</span>
             </motion.div>
           )}
@@ -266,51 +308,56 @@ export default function HeroGeometric({
           <motion.div custom={2} variants={fadeUpVariants} initial="hidden" animate="visible">
             <div className="mb-8 max-w-4xl mx-auto">
               <div className="bg-black/40 border border-white/20 rounded-lg backdrop-blur-sm overflow-hidden">
+                <div id="level-trade" className="border-b border-white/10 p-4 flex justify-center gap-6 text-2xl">
+                  <Image src="/images/stone.png" alt="Stone" width={28} height={28} className="object-contain cursor-pointer" />
+                  <span className="cursor-pointer">🥉</span>
+                  <span className="cursor-pointer">🥈</span>
+                  <span className="cursor-pointer">🥇</span>
+                  <span className="cursor-pointer">🎖️</span>
+                  <span className="cursor-pointer">🏆</span>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">
-                        <th className="text-white/80 font-medium p-3 text-left">no</th>
-                        <th className="text-white/80 font-medium p-3 text-left">tier</th>
-                        <th className="text-white/80 font-medium p-3 text-left">cost</th>
+                        <th className="text-white/80 font-medium p-3 text-center">id</th>
+                        <th className="text-white/80 font-medium p-3 text-center">cost</th>
                         <th className="text-white/80 font-medium p-3 text-center">1x</th>
                         <th className="text-white/80 font-medium p-3 text-center">2x</th>
                         <th className="text-white/80 font-medium p-3 text-center">3x</th>
-                        <th className="text-white/80 font-medium p-3 text-left">balance</th>
+                        <th className="text-white/80 font-medium p-3 text-center">balance</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="text-white p-3">1</td>
-                        <td className="text-yellow-400 p-3">★★★★★</td>
-                        <td className="text-white p-3">50</td>
+                        <td className="text-white p-3 text-center">#184</td>
+                        <td className="text-white p-3 text-center">50</td>
                         {["1", "2", "3"].map((mult) => (
                           <td key={mult} className="p-3 text-center">
                             <input
                               type="checkbox"
-                              checked={checkedStates[`1-${mult}`] || false}
-                              onChange={() => handleCheckboxChange("1", mult)}
+                              checked={checkedStates[`184-${mult}`] || false}
+                              onChange={() => handleCheckboxChange("184", mult)}
                               className="custom-checkbox"
                             />
                           </td>
                         ))}
-                        <td className="text-white p-3">{calculateWin("1", 50)}</td>
+                        <td className="text-white p-3 text-center">{calculateWin("184", 50)}</td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="text-white p-3">2</td>
-                        <td className="text-yellow-400 p-3">★★★★★</td>
-                        <td className="text-white p-3">50</td>
+                        <td className="text-white p-3 text-center">#188</td>
+                        <td className="text-white p-3 text-center">50</td>
                         {["1", "2", "3"].map((mult) => (
                           <td key={mult} className="p-3 text-center">
                             <input
                               type="checkbox"
-                              checked={checkedStates[`2-${mult}`] || false}
-                              onChange={() => handleCheckboxChange("2", mult)}
+                              checked={checkedStates[`188-${mult}`] || false}
+                              onChange={() => handleCheckboxChange("188", mult)}
                               className="custom-checkbox"
                             />
                           </td>
                         ))}
-                        <td className="text-white p-3">{calculateWin("2", 50)}</td>
+                        <td className="text-white p-3 text-center">{calculateWin("188", 50)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -318,65 +365,66 @@ export default function HeroGeometric({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto">
-              <motion.div
-                custom={2.1}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-                className="bg-black/40 border border-white/20 rounded-lg p-4 backdrop-blur-sm"
-              >
-                <div className="mb-2 flex justify-center">
-                  <Image src="/images/usdjpy.png" alt="USDJPY" width={40} height={40} className="rounded-full" />
+            <div className="relative mb-8 max-w-4xl mx-auto">
+              <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex gap-4">
+                  {currencyPairs.map((pair, index) => (
+                    <div key={pair.name} style={{ height: 190 }} className="flex-[0_0_calc(33.333%-0.67rem)] min-w-0">
+                      <motion.div
+                        custom={2.1 + index * 0.1}
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="bg-black/40 border border-white/20 rounded-lg p-6 backdrop-blur-sm h-full flex flex-col justify-between"
+                      >
+                        <div className="mb-4 flex justify-center">
+                          <Image
+                            src={pair.image || "/placeholder.svg"}
+                            alt={pair.name}
+                            width={pair.size}
+                            height={pair.size}
+                            className="rounded-full"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <div className="text-white text-lg font-medium mb-2">{pair.name}</div>
+                          <div className="text-gray-500 text-sm">{pair.msg}</div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-white text-sm font-medium">USDJPY</div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                custom={2.2}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-                className="bg-black/40 border border-white/20 rounded-lg p-4 backdrop-blur-sm"
+              <button
+                onClick={scrollPrev}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-2 backdrop-blur-sm transition-colors"
+                aria-label="Previous slide"
               >
-                <div className="mb-2 flex justify-center">
-                  <Image src="/images/eurusd.png" alt="EURUSD" width={32} height={32} className="rounded-full" />
-                </div>
-                <div className="text-white text-sm font-medium">EURUSD</div>
-              </motion.div>
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </button>
+              <button
+                onClick={scrollNext}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-2 backdrop-blur-sm transition-colors"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-5 h-5 text-white" />
+              </button>
 
-              <motion.div
-                custom={2.3}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-                className="bg-black/40 border border-white/20 rounded-lg p-4 backdrop-blur-sm"
-              >
-                <div className="mb-2 flex justify-center">
-                  <Image src="/images/usdchf-new.png" alt="USDCHF" width={40} height={40} className="rounded-full" />
-                </div>
-                <div className="text-white text-sm font-medium">USDCHF</div>
-              </motion.div>
-
-              <motion.div
-                custom={2.4}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-                className="bg-black/40 border border-white/20 rounded-lg p-4 backdrop-blur-sm"
-              >
-                <div className="mb-2 flex justify-center">
-                  <Image src="/images/eurjpy.png" alt="EURJPY" width={40} height={40} className="rounded-full" />
-                </div>
-                <div className="text-white text-sm font-medium">EURJPY</div>
-              </motion.div>
+              <div className="flex justify-center gap-2 mt-4">
+                {currencyPairs.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollTo(index)}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      selectedIndex === index ? "bg-yellow-400 w-6" : "bg-white/30 hover:bg-white/50",
+                    )}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
-
-            <p className="text-sm sm:text-base md:text-lg text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
-              Trading Guidelines
-              <br />
-              Don't overtrade, identify the market condition: trending or sideway.
-            </p>
           </motion.div>
         </div>
       </div>
