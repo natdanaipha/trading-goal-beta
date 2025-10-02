@@ -309,7 +309,13 @@ export default function HeroGeometric({
             <div className="mb-8 max-w-4xl mx-auto">
               <div className="bg-black/40 border border-white/20 rounded-lg backdrop-blur-sm overflow-hidden">
                 <div id="level-trade" className="border-b border-white/10 p-4 flex justify-center gap-6 text-2xl">
-                  <Image src="/images/stone.png" alt="Stone" width={28} height={28} className="object-contain cursor-pointer" />
+                  <Image
+                    src="/images/stone.png"
+                    alt="Stone"
+                    width={28}
+                    height={28}
+                    className="object-contain cursor-pointer"
+                  />
                   <span className="cursor-pointer">🥉</span>
                   <span className="cursor-pointer">🥈</span>
                   <span className="cursor-pointer">🥇</span>
@@ -369,7 +375,7 @@ export default function HeroGeometric({
               <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-4">
                   {currencyPairs.map((pair, index) => (
-                    <div key={pair.name} style={{ height: 190 }} className="flex-[0_0_calc(33.333%-0.67rem)] min-w-0">
+                    <div key={pair.name} style={{ height: 190 }} className="flex-[0_0_calc(50%-0.5rem)] min-w-0">
                       <motion.div
                         custom={2.1 + index * 0.1}
                         variants={fadeUpVariants}
