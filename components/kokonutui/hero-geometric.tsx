@@ -14,72 +14,6 @@ const pacifico = Pacifico({
   variable: "--font-pacifico",
 })
 
-function ElegantShape({
-  className,
-  delay = 0,
-  width = 400,
-  height = 100,
-  rotate = 0,
-  gradient = "from-white/[0.08]",
-}: {
-  className?: string
-  delay?: number
-  width?: number
-  height?: number
-  rotate?: number
-  gradient?: string
-}) {
-  return (
-    <motion.div
-      initial={{
-        opacity: 0,
-        y: -150,
-        rotate: rotate - 15,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        rotate: rotate,
-      }}
-      transition={{
-        duration: 2.4,
-        delay,
-        ease: [0.23, 0.86, 0.39, 0.96],
-        opacity: { duration: 1.2 },
-      }}
-      className={cn("absolute", className)}
-    >
-      <motion.div
-        animate={{
-          y: [0, 15, 0],
-        }}
-        transition={{
-          duration: 12,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "easeInOut",
-        }}
-        style={{
-          width,
-          height,
-        }}
-        className="relative"
-      >
-        <div
-          className={cn(
-            "absolute inset-0 rounded-full",
-            "bg-gradient-to-r to-transparent",
-            gradient,
-            "backdrop-blur-[2px] border-2 border-white/[0.15]",
-            "shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]",
-            "after:absolute after:inset-0 after:rounded-full",
-            "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]",
-          )}
-        />
-      </motion.div>
-    </motion.div>
-  )
-}
-
 export default function HeroGeometric({
   badge = "",
   title1 = "",
@@ -90,13 +24,20 @@ export default function HeroGeometric({
   title2?: string
 }) {
   const [checkedStates, setCheckedStates] = useState<{ [key: string]: boolean }>({})
+  const [currentLevels, setCurrentLevels] = useState<{ [key: string]: number }>({})
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start", slidesToScroll: 1 })
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
     const saved = localStorage.getItem("trading-checkboxes")
+    const savedLevels = localStorage.getItem("trading-levels")
     if (saved) {
       setCheckedStates(JSON.parse(saved))
+    }
+    if (savedLevels) {
+      setCurrentLevels(JSON.parse(savedLevels))
+    } else {
+      setCurrentLevels({ "184": 1, "188": 1 })
     }
   }, [])
 
@@ -138,18 +79,61 @@ export default function HeroGeometric({
     }
     setCheckedStates(newStates)
     localStorage.setItem("trading-checkboxes", JSON.stringify(newStates))
+
+    const multipliers = ["1", "2", "3"]
+    const allChecked = multipliers.every((mult) => newStates[`${rowId}-${mult}`])
+
+    if (allChecked) {
+      const currentLevel = currentLevels[rowId] || 1
+      if (currentLevel < 5) {
+        const newLevel = currentLevel + 1
+        const newLevels = { ...currentLevels, [rowId]: newLevel }
+        setCurrentLevels(newLevels)
+        localStorage.setItem("trading-levels", JSON.stringify(newLevels))
+
+        const resetStates = { ...newStates }
+        multipliers.forEach((mult) => {
+          delete resetStates[`${rowId}-${mult}`]
+        })
+        setCheckedStates(resetStates)
+        localStorage.setItem("trading-checkboxes", JSON.stringify(resetStates))
+      }
+    }
   }
 
-  const calculateWin = (rowId: string, cost: number) => {
+  const getCurrentLevel = (rowId: string) => {
+    return currentLevels[rowId] || 1
+  }
+
+  const getCost = (rowId: string) => {
+    const level = getCurrentLevel(rowId)
+    return level === 1 ? 50 : 200
+  }
+
+  const getCheckboxValue = (rowId: string) => {
+    const level = getCurrentLevel(rowId)
+    return level === 1 ? 50 : 200
+  }
+
+  const calculateWin = (rowId: string) => {
+    const level = getCurrentLevel(rowId)
+    const cost = getCost(rowId)
+    const checkboxValue = getCheckboxValue(rowId)
+
     const multipliers = ["1", "2", "3"]
     let total = 0
     multipliers.forEach((mult) => {
       const key = `${rowId}-${mult}`
       if (checkedStates[key]) {
-        total += 50
+        total += checkboxValue
       }
     })
-    return total + 50
+
+    if (level === 1) {
+      return total + 50
+    } else {
+      return total + 200
+    }
   }
 
   const fadeUpVariants = {
@@ -172,6 +156,11 @@ export default function HeroGeometric({
     { name: "EURJPY", image: "/images/eurjpy.png", size: 40, msg: "smooth trends" },
   ]
 
+  const levels = [
+    { rowId: "184", symbols: ["🥉", "🥈", "🥇", "🎖️", "🏆"] },
+    { rowId: "188", symbols: ["🥉", "🥈", "🥇", "🎖️", "🏆"] },
+  ]
+
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
       <style jsx>{`
@@ -186,9 +175,7 @@ export default function HeroGeometric({
           background-color: transparent;
         }
         .custom-checkbox:checked {
-          //background-color: #007f00;
-          //border-color: #fb923c;
-          border:none;
+          border: none;
         }
         .custom-checkbox:checked::after {
           content: "⭐";
@@ -200,55 +187,6 @@ export default function HeroGeometric({
           font-weight: bold;
         }
       `}</style>
-
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
-
-      <div className="absolute inset-0 overflow-hidden">
-        <ElegantShape
-          delay={0.3}
-          width={600}
-          height={140}
-          rotate={12}
-          gradient="from-indigo-500/[0.15]"
-          className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
-        />
-
-        <ElegantShape
-          delay={0.5}
-          width={500}
-          height={120}
-          rotate={-15}
-          gradient="from-rose-500/[0.15]"
-          className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]"
-        />
-
-        <ElegantShape
-          delay={0.4}
-          width={300}
-          height={80}
-          rotate={-8}
-          gradient="from-violet-500/[0.15]"
-          className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
-        />
-
-        <ElegantShape
-          delay={0.6}
-          width={200}
-          height={60}
-          rotate={20}
-          gradient="from-amber-500/[0.15]"
-          className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
-        />
-
-        <ElegantShape
-          delay={0.7}
-          width={150}
-          height={40}
-          rotate={-25}
-          gradient="from-cyan-500/[0.15]"
-          className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
-        />
-      </div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -306,69 +244,69 @@ export default function HeroGeometric({
           )}
 
           <motion.div custom={2} variants={fadeUpVariants} initial="hidden" animate="visible">
-            <div className="mb-8 max-w-4xl mx-auto">
-              <div className="bg-black/40 border border-white/20 rounded-lg backdrop-blur-sm overflow-hidden">
-                <div id="level-trade" className="border-b border-white/10 p-4 flex justify-center gap-6 text-2xl">
-                  <Image
-                    src="/images/stone.png"
-                    alt="Stone"
-                    width={28}
-                    height={28}
-                    className="object-contain cursor-pointer"
-                  />
-                  <span className="cursor-pointer">🥉</span>
-                  <span className="cursor-pointer">🥈</span>
-                  <span className="cursor-pointer">🥇</span>
-                  <span className="cursor-pointer">🎖️</span>
-                  <span className="cursor-pointer">🏆</span>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-white/10">
-                        <th className="text-white/80 font-medium p-3 text-center">id</th>
-                        <th className="text-white/80 font-medium p-3 text-center">cost</th>
-                        <th className="text-white/80 font-medium p-3 text-center">1x</th>
-                        <th className="text-white/80 font-medium p-3 text-center">2x</th>
-                        <th className="text-white/80 font-medium p-3 text-center">3x</th>
-                        <th className="text-white/80 font-medium p-3 text-center">balance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="text-white p-3 text-center">#184</td>
-                        <td className="text-white p-3 text-center">50</td>
-                        {["1", "2", "3"].map((mult) => (
-                          <td key={mult} className="p-3 text-center">
-                            <input
-                              type="checkbox"
-                              checked={checkedStates[`184-${mult}`] || false}
-                              onChange={() => handleCheckboxChange("184", mult)}
-                              className="custom-checkbox"
+            <div className="mb-8 max-w-4xl mx-auto space-y-4">
+              {levels.map((level, tableIndex) => (
+                <div
+                  key={level.rowId}
+                  className="bg-black/40 border border-white/20 rounded-lg backdrop-blur-sm overflow-hidden"
+                >
+                  <div
+                    id={tableIndex === 0 ? "level-trade" : undefined}
+                    className="border-b border-white/10 p-4 flex justify-center gap-6 text-2xl"
+                  >
+                    {level.symbols.map((symbol, idx) => {
+                      const currentLevel = getCurrentLevel(level.rowId)
+                      const isUnlocked = idx < currentLevel
+                      return (
+                        <div key={idx} className="cursor-pointer">
+                          {isUnlocked ? (
+                            <span>{symbol}</span>
+                          ) : (
+                            <Image
+                              src="/images/stone.png"
+                              alt="Stone"
+                              width={28}
+                              height={28}
+                              className="object-contain"
                             />
-                          </td>
-                        ))}
-                        <td className="text-white p-3 text-center">{calculateWin("184", 50)}</td>
-                      </tr>
-                      <tr className="hover:bg-white/5 transition-colors">
-                        <td className="text-white p-3 text-center">#188</td>
-                        <td className="text-white p-3 text-center">50</td>
-                        {["1", "2", "3"].map((mult) => (
-                          <td key={mult} className="p-3 text-center">
-                            <input
-                              type="checkbox"
-                              checked={checkedStates[`188-${mult}`] || false}
-                              onChange={() => handleCheckboxChange("188", mult)}
-                              className="custom-checkbox"
-                            />
-                          </td>
-                        ))}
-                        <td className="text-white p-3 text-center">{calculateWin("188", 50)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          <th className="text-white/80 font-medium p-3 text-center">id</th>
+                          <th className="text-white/80 font-medium p-3 text-center">cost</th>
+                          <th className="text-white/80 font-medium p-3 text-center">1x</th>
+                          <th className="text-white/80 font-medium p-3 text-center">2x</th>
+                          <th className="text-white/80 font-medium p-3 text-center">3x</th>
+                          <th className="text-white/80 font-medium p-3 text-center">balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="hover:bg-white/5 transition-colors">
+                          <td className="text-white p-3 text-center">#{level.rowId}</td>
+                          <td className="text-white p-3 text-center">{getCost(level.rowId)}</td>
+                          {["1", "2", "3"].map((mult) => (
+                            <td key={mult} className="p-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={checkedStates[`${level.rowId}-${mult}`] || false}
+                                onChange={() => handleCheckboxChange(level.rowId, mult)}
+                                className="custom-checkbox"
+                              />
+                            </td>
+                          ))}
+                          <td className="text-white p-3 text-center">{calculateWin(level.rowId)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
 
             <div className="relative mb-8 max-w-4xl mx-auto">
